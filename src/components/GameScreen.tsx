@@ -1,8 +1,8 @@
 // File: src/components/GameScreen.tsx
-
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+
 import {
   casePool,
   choiceLabels,
@@ -12,12 +12,14 @@ import {
   maxVerificationCasesPerRun,
   precedentLabels,
 } from "../data/cases";
+
 import {
   applyEffect,
   createPendingVerification,
   decideEnding,
   statLabels,
 } from "../lib/gameLogic";
+
 import type {
   CaseData,
   ChoiceKey,
@@ -25,6 +27,7 @@ import type {
   HistoryItem,
   PendingVerification,
   PrecedentKey,
+  StatEffect,
   StatKey,
   Stats,
 } from "../types/game";
@@ -43,6 +46,15 @@ type ModalType = "stats" | "precedents" | "history" | "verifications" | null;
 type CaseSelection = {
   caseData: CaseData;
   activeVerificationId?: string | null;
+};
+
+type StatChangePopup = {
+  id: string;
+  choiceLabel: string;
+  result: string;
+  before: Stats;
+  after: Stats;
+  delta: StatEffect;
 };
 
 const caseMap = new Map(casePool.map((item) => [item.id, item]));
@@ -77,8 +89,13 @@ function getPreviousStats(history: HistoryItem[]): Stats {
   return initialStats;
 }
 
-function getStatDelta(stats: Stats, previousStats: Stats, key: StatKey) {
-  return stats[key] - previousStats[key];
+function getStatDeltaBetween(before: Stats, after: Stats): StatEffect {
+  return {
+    citizenTrust: after.citizenTrust - before.citizenTrust,
+    adminTrust: after.adminTrust - before.adminTrust,
+    consistency: after.consistency - before.consistency,
+    rulePollution: after.rulePollution - before.rulePollution,
+  };
 }
 
 function getDeltaClass(key: StatKey, delta: number) {
@@ -92,12 +109,114 @@ function getDeltaClass(key: StatKey, delta: number) {
 }
 
 function getDeltaText(delta: number) {
-  if (delta === 0) return "";
+  if (delta === 0) return "변화 없음";
 
   const arrow = delta > 0 ? "↑" : "↓";
   const sign = delta > 0 ? "+" : "";
 
   return `${arrow} ${sign}${delta}`;
+}
+
+function getSentenceLines(text: string) {
+  return text
+    .replace(/\r\n/g, "\n")
+    .split(/\n+/g)
+    .flatMap((paragraph) =>
+      paragraph
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/([.!?。！？])\s+/g, "$1|")
+        .split("|")
+    )
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function SentenceText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  const lines = getSentenceLines(text);
+
+  const paragraphClassName = className
+    ? `${className} sentence-text`
+    : "sentence-text";
+
+  if (lines.length === 0) {
+    return <p className={paragraphClassName} />;
+  }
+
+  return (
+    <p className={paragraphClassName}>
+      {lines.map((line, index) => (
+        <Fragment key={`${line}-${index}`}>
+          {line}
+          {index < lines.length - 1 && <br />}
+        </Fragment>
+      ))}
+    </p>
+  );
+}
+
+function getResultSummaryLines(text: string) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+
+  if (!normalized) {
+    return ["판단 결과가 기록되었습니다.", "기관 상태 변화를 확인하세요."];
+  }
+
+  const sentences = normalized
+    .replace(/([.!?])\s+/g, "$1|")
+    .split("|")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  if (sentences.length >= 2) {
+    return [sentences[0], sentences.slice(1).join(" ")];
+  }
+
+  if (normalized.length <= 44) {
+    return [normalized, "기관 상태 변화가 다음 심사에 반영됩니다."];
+  }
+
+  const middle = Math.floor(normalized.length / 2);
+  const leftSpace = normalized.lastIndexOf(" ", middle);
+  const rightSpace = normalized.indexOf(" ", middle);
+  const splitAt =
+    leftSpace > 16
+      ? leftSpace
+      : rightSpace > 0 && rightSpace < normalized.length - 16
+      ? rightSpace
+      : middle;
+
+  return [
+    normalized.slice(0, splitAt).trim(),
+    normalized.slice(splitAt).trim(),
+  ];
+}
+
+function getResultSummaryParts(text: string) {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  const parts = normalized
+    .split(/(?=새 전례 생성:|사후 검증 등록:|사후 검증 처리:)/g)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  const mainText = parts[0] ?? "";
+  const extras = parts.slice(1).map((item) => {
+    if (item.startsWith("새 전례 생성:")) return "전례 생성";
+    if (item.startsWith("사후 검증 등록:")) return "사후 검증 등록";
+    if (item.startsWith("사후 검증 처리:")) return "사후 검증 처리";
+    return "추가 조치";
+  });
+
+  return {
+    lines: getResultSummaryLines(mainText),
+    extras: Array.from(new Set(extras)),
+  };
 }
 
 function getRiskLabel(risk: PendingVerification["risk"]) {
@@ -211,9 +330,7 @@ function pickWeightedRandom(items: CaseData[]) {
 function selectInitialCase(): CaseSelection {
   const earlyCases = casePool.filter(
     (item) =>
-      item.stage === "early" &&
-      item.caseType === "base" &&
-      !item.requiresPrecedent
+      item.stage === "early" && item.caseType === "base" && !item.requiresPrecedent
   );
 
   return {
@@ -227,7 +344,7 @@ function countShownVerificationCases(seenCaseIds: string[]) {
     .length;
 }
 
-function getAllowedStages(nextCaseNumber: number) {
+function getAllowedStages(nextCaseNumber: number): CaseData["stage"][] {
   if (nextCaseNumber <= 5) return ["early"];
   if (nextCaseNumber <= 10) return ["mid", "early"];
   return ["late", "mid"];
@@ -349,14 +466,14 @@ function selectNextCase(params: {
     stats.citizenTrust <= 35
       ? ["backlash", "gray", "normalUse", "base", "abuse"]
       : phase === "early"
-        ? ["base", "gray"]
-        : phase === "mid"
-          ? hasMeaningfulPrecedentPressure
-            ? ["normalUse", "abuse", "gray", "base"]
-            : ["normalUse", "gray", "base", "abuse"]
-          : hasMeaningfulPrecedentPressure
-            ? ["abuse", "gray", "normalUse", "base"]
-            : ["gray", "normalUse", "abuse", "base"];
+      ? ["base", "gray"]
+      : phase === "mid"
+      ? hasMeaningfulPrecedentPressure
+        ? ["normalUse", "abuse", "gray", "base"]
+        : ["normalUse", "gray", "base", "abuse"]
+      : hasMeaningfulPrecedentPressure
+      ? ["abuse", "gray", "normalUse", "base"]
+      : ["gray", "normalUse", "abuse", "base"];
 
   for (const type of preferredTypes) {
     const bucket = eligible.filter((item) => item.caseType === type);
@@ -404,15 +521,49 @@ function selectNextCase(params: {
   };
 }
 
+function AnimatedNumber({ from, to, active }: { from: number; to: number; active: boolean }) {
+  const [value, setValue] = useState(from);
+
+  useEffect(() => {
+    if (!active) {
+      setValue(from);
+      return;
+    }
+
+    const duration = 620;
+    const startedAt = performance.now();
+    let frameId = 0;
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - startedAt) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const nextValue = Math.round(from + (to - from) * eased);
+
+      setValue(nextValue);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(tick);
+      }
+    };
+
+    frameId = requestAnimationFrame(tick);
+
+    return () => cancelAnimationFrame(frameId);
+  }, [active, from, to]);
+
+  return <>{value}</>;
+}
+
 export default function GameScreen() {
   const initialSelection = useMemo(() => selectInitialCase(), []);
+
   const [started, setStarted] = useState(false);
   const [currentCase, setCurrentCase] = useState<CaseData>(
     initialSelection.caseData
   );
-  const [activeVerificationId, setActiveVerificationId] = useState<
-    string | null
-  >(initialSelection.activeVerificationId ?? null);
+  const [activeVerificationId, setActiveVerificationId] = useState<string | null>(
+    initialSelection.activeVerificationId ?? null
+  );
   const [seenCaseIds, setSeenCaseIds] = useState<string[]>([
     initialSelection.caseData.id,
   ]);
@@ -422,9 +573,13 @@ export default function GameScreen() {
     PendingVerification[]
   >([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
-  const [lastResult, setLastResult] = useState<string>("");
+  const [lastResult, setLastResult] = useState("");
   const [ending, setEnding] = useState<EndingResult | null>(null);
   const [openModal, setOpenModal] = useState<ModalType>(null);
+  const [statChangePopup, setStatChangePopup] = useState<StatChangePopup | null>(
+    null
+  );
+  const [statAnimationReady, setStatAnimationReady] = useState(false);
 
   const currentCaseNumber = history.length + 1;
 
@@ -447,6 +602,18 @@ export default function GameScreen() {
       }));
   }, [currentCase, precedents]);
 
+  useEffect(() => {
+    if (!statChangePopup) return;
+
+    setStatAnimationReady(false);
+
+    const timer = window.setTimeout(() => {
+      setStatAnimationReady(true);
+    }, 760);
+
+    return () => window.clearTimeout(timer);
+  }, [statChangePopup?.id]);
+
   function startGame() {
     const selection = selectInitialCase();
 
@@ -461,13 +628,17 @@ export default function GameScreen() {
     setLastResult("");
     setEnding(null);
     setOpenModal(null);
+    setStatChangePopup(null);
+    setStatAnimationReady(false);
   }
 
   function handleChoice(choice: ChoiceKey) {
     if (!currentCase || ending) return;
 
     const outcome = currentCase.outcomes[choice];
+    const statsBefore = stats;
     const nextStats = applyEffect(stats, outcome.effect);
+    const delta = getStatDeltaBetween(statsBefore, nextStats);
 
     let nextPrecedents = precedents;
     let unlockedPrecedent: PrecedentKey | undefined;
@@ -544,7 +715,8 @@ export default function GameScreen() {
       resultTextParts.push(`사후 검증 처리: ${resolvedVerificationTitle}`);
     }
 
-    const resultText = resultTextParts.join(" ");
+    const resultText = resultTextParts.join("\n");
+    const choiceLabel = getChoiceLabelForCase(currentCase, choice);
 
     const nextHistoryItem: HistoryItem = {
       id: `${currentCase.id}-${history.length + 1}`,
@@ -560,10 +732,16 @@ export default function GameScreen() {
 
     const nextHistory = [nextHistoryItem, ...history];
 
-    if (
-      currentCase.id === finalCaseId ||
-      currentCaseNumber >= maxCasesPerRun
-    ) {
+    setStatChangePopup({
+      id: `${currentCase.id}-${history.length + 1}-${choice}`,
+      choiceLabel,
+      result: resultText,
+      before: statsBefore,
+      after: nextStats,
+      delta,
+    });
+
+    if (currentCase.id === finalCaseId || currentCaseNumber >= maxCasesPerRun) {
       const finalEnding = decideEnding(
         nextStats,
         nextPrecedents,
@@ -598,56 +776,86 @@ export default function GameScreen() {
     setSeenCaseIds([...seenCaseIds, nextSelection.caseData.id]);
   }
 
+  function renderStatMeter(key: StatKey, value: number, delta?: number) {
+    const deltaValue = delta ?? 0;
+    const deltaText = getDeltaText(deltaValue);
+
+    return (
+      <div className={`stat-item ${getStatClass(key, value)}`} key={key}>
+        <span>{statLabels[key]}</span>
+        <strong>{value}</strong>
+        <div className="meter">
+          <div style={{ width: `${value}%` }} />
+        </div>
+        <em className={getDeltaClass(key, deltaValue)}>{deltaText}</em>
+      </div>
+    );
+  }
+
+  function renderAnimatedStatChange(key: StatKey) {
+    if (!statChangePopup) return null;
+
+    const before = statChangePopup.before[key];
+    const after = statChangePopup.after[key];
+    const delta = statChangePopup.delta[key] ?? 0;
+    const animatedWidth = statAnimationReady ? after : before;
+
+    return (
+      <div
+        className={`change-stat-row ${getStatClass(key, after)}`}
+        key={key}
+      >
+        <div className="change-stat-head">
+          <span>{statLabels[key]}</span>
+          <div className="change-value-wrap">
+            <em className={getDeltaClass(key, delta)}>{getDeltaText(delta)}</em>
+            <strong className="change-number">
+              <AnimatedNumber
+                from={before}
+                to={after}
+                active={statAnimationReady}
+              />
+            </strong>
+          </div>
+        </div>
+
+        <div className="change-meter">
+          <div className="change-meter-before" style={{ width: `${before}%` }} />
+          <div
+            className="change-meter-after"
+            style={{ width: `${animatedWidth}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   function renderStatsModal() {
     return (
       <div className="modal-section">
-        <p className="modal-desc">
-          현재 예외 심사국과 사회의 상태입니다. 수치 옆의 화살표는 직전
-          판단 이전과 비교했을 때 얼마나 변동되었는지를 나타냅니다.
-        </p>
+        <SentenceText
+          className="modal-desc"
+          text="현재 예외 심사국과 사회의 상태입니다. 수치 옆의 화살표는 직전 판단 이전과 비교했을 때 얼마나 변동되었는지를 나타냅니다."
+        />
 
-        <div className="stat-list modal-stat-list">
+        <div className="stat-list">
           {statOrder.map((key) => {
             const value = stats[key];
-            const delta = getStatDelta(stats, previousStats, key);
-            const deltaText = getDeltaText(delta);
+            const delta = stats[key] - previousStats[key];
 
-            return (
-              <div className="stat-row" key={key}>
-                <div className="stat-label">
-                  <span>{statLabels[key]}</span>
-
-                  <div className="stat-value-wrap">
-                    {deltaText && (
-                      <em className={`stat-delta ${getDeltaClass(key, delta)}`}>
-                        {deltaText}
-                      </em>
-                    )}
-
-                    <strong className={getStatClass(key, value)}>{value}</strong>
-                  </div>
-                </div>
-
-                <div className="stat-bar">
-                  <div
-                    className={`stat-fill ${getStatClass(key, value)}`}
-                    style={{ width: `${value}%` }}
-                  />
-                </div>
-              </div>
-            );
+            return renderStatMeter(key, value, delta);
           })}
         </div>
 
         {pendingVerifications.length > 0 && (
-          <div className="mini-verification-box">
+          <div className="pending-summary">
             <h3>사후 검증 대기</h3>
-            <p>
-              조건부 승인으로 인해 아직 처리되지 않은 검증 항목이 있습니다.
-              미검증 항목은 최종 감사에서 불리하게 작용합니다.
-            </p>
+            <SentenceText
+              text="조건부 승인으로 인해 아직 처리되지 않은 검증 항목이 있습니다. 미검증 항목은 최종 감사에서 불리하게 작용합니다."
+            />
             <strong>
-              {pendingVerifications.length}종 / {getPendingVerificationTotal(pendingVerifications)}건 대기 중
+              {pendingVerifications.length}종 /{" "}
+              {getPendingVerificationTotal(pendingVerifications)}건 대기 중
             </strong>
           </div>
         )}
@@ -658,10 +866,10 @@ export default function GameScreen() {
   function renderPrecedentsModal() {
     return (
       <div className="modal-section">
-        <p className="modal-desc">
-          예외 심사관의 판단으로 생성된 전례입니다. 정식 승인은 강한 전례를,
-          조건부 승인은 사후 검증이 필요한 전례를 남깁니다.
-        </p>
+        <SentenceText
+          className="modal-desc"
+          text="예외 심사관의 판단으로 생성된 전례입니다. 정식 승인은 강한 전례를, 조건부 승인은 사후 검증이 필요한 전례를 남깁니다."
+        />
 
         {precedents.length === 0 ? (
           <p className="empty-text">아직 생성된 전례가 없습니다.</p>
@@ -670,7 +878,7 @@ export default function GameScreen() {
             {precedents.map((key) => (
               <div className="precedent-card" key={key}>
                 <strong>{precedentLabels[key].title}</strong>
-                <p>{precedentLabels[key].description}</p>
+                <SentenceText text={precedentLabels[key].description} />
               </div>
             ))}
           </div>
@@ -682,15 +890,15 @@ export default function GameScreen() {
   function renderHistoryModal() {
     return (
       <div className="modal-section">
-        <p className="modal-desc">
-          지금까지 내린 판단의 기록입니다. 판단의 누적 결과가 전례와 엔딩을
-          결정합니다.
-        </p>
+        <SentenceText
+          className="modal-desc"
+          text="지금까지 내린 판단의 기록입니다. 판단의 누적 결과가 전례와 엔딩을 결정합니다."
+        />
 
         {history.length === 0 ? (
           <p className="empty-text">아직 판단 기록이 없습니다.</p>
         ) : (
-          <div className="history-list modal-history-list">
+          <div className="history-list">
             {history.map((item) => (
               <div className="history-item" key={item.id}>
                 <div>
@@ -698,7 +906,7 @@ export default function GameScreen() {
                   <span>{getChoiceLabelForCase(getCase(item.caseId), item.choice)}</span>
                 </div>
 
-                <p>{item.result}</p>
+                <SentenceText text={item.result} />
 
                 {item.unlockedPrecedent && (
                   <em>
@@ -725,11 +933,10 @@ export default function GameScreen() {
   function renderVerificationsModal() {
     return (
       <div className="modal-section">
-        <p className="modal-desc">
-          조건부 승인으로 인해 발생한 사후 검증 목록입니다. 같은 유형의 검증은
-          하나의 항목으로 묶이며, 한 번의 사후 검증 사례에서 같은 유형의 책임을
-          함께 정리합니다.
-        </p>
+        <SentenceText
+          className="modal-desc"
+          text="조건부 승인으로 인해 발생한 사후 검증 목록입니다. 같은 유형의 검증은 하나의 항목으로 묶이며, 한 번의 사후 검증 사례에서 같은 유형의 책임을 함께 정리합니다."
+        />
 
         {pendingVerifications.length === 0 ? (
           <p className="empty-text">현재 사후 검증 대기 항목이 없습니다.</p>
@@ -744,7 +951,7 @@ export default function GameScreen() {
                   </span>
                 </div>
 
-                <p>{item.note}</p>
+                <SentenceText text={item.note} />
 
                 <small>
                   누적 {item.count}건 / 검증 예정: CASE {" "}
@@ -767,10 +974,10 @@ export default function GameScreen() {
       openModal === "stats"
         ? "기관 상태"
         : openModal === "precedents"
-          ? "전례 기록부"
-          : openModal === "verifications"
-            ? "사후 검증"
-            : "판단 기록";
+        ? "전례 기록부"
+        : openModal === "verifications"
+        ? "사후 검증"
+        : "판단 기록";
 
     return (
       <div className="modal-backdrop" onClick={() => setOpenModal(null)}>
@@ -802,37 +1009,82 @@ export default function GameScreen() {
     );
   }
 
+  function renderStatChangePopup() {
+    if (!statChangePopup) return null;
+
+    const resultSummary = getResultSummaryParts(statChangePopup.result);
+
+    return (
+      <div
+        className="modal-backdrop change-backdrop"
+        onClick={() => setStatChangePopup(null)}
+      >
+        <section
+          className="modal-card change-card"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="change-summary-box">
+            <div className="change-summary-head">
+              <strong>{statChangePopup.choiceLabel}</strong>
+              {resultSummary.extras.length > 0 && (
+                <span className="change-extra-badge">
+                  {resultSummary.extras.length === 1
+                    ? resultSummary.extras[0]
+                    : `추가 조치 ${resultSummary.extras.length}건`}
+                </span>
+              )}
+            </div>
+            <p>{resultSummary.lines[0]}</p>
+            <p>{resultSummary.lines[1]}</p>
+          </div>
+
+          <div className="change-stat-list">
+            {statOrder.map((key) => renderAnimatedStatChange(key))}
+          </div>
+
+          <button
+            className="change-next-button"
+            type="button"
+            onClick={() => setStatChangePopup(null)}
+          >
+            {ending ? "최종 결과 보기" : "다음 사례 보기"}
+          </button>
+        </section>
+      </div>
+    );
+  }
+
   if (!started) {
     return (
       <main className="game-shell start-mode">
         <section className="start-card">
           <p className="eyebrow">EXCEPTION REVIEW OFFICE</p>
-          <h1>Judgement Please</h1>
-          <h2>예외 심사관</h2>
 
-          <p className="start-desc">
-            시민과 단체의 예외 신청을 심사하고, 당신의 판단이 전례가 되어
-            다음 사건에 영향을 주는 웹 프로토타입입니다.
-          </p>
+          <h2>Judgement Please</h2>
 
-          <div className="start-rules">
+          <SentenceText
+            className="start-desc"
+            text="시민과 단체의 예외 신청을 심사하고, 당신의 판단이 전례가 되어 다음 사건에 영향을 줍니다."
+          />
+
+          <div className="start-info-grid">
             <div>
-              <strong>핵심 루프</strong>
-              <span>심사 → 예외 판단 → 전례화 → 정상 사용 / 악용 / 사후 검증</span>
+              <span>핵심 루프</span>
+              <strong>심사 → 예외 판단 → 전례화 → 정상 사용 / 악용 / 사후 검증</strong>
             </div>
 
             <div>
-              <strong>사례 구조</strong>
-              <span>전체 사례 풀 45개 중 한 판에 15개 랜덤 등장</span>
+              <span>사례 구조</span>
+              <strong>전체 사례 풀 45개 중 한 판에 15개 랜덤 등장</strong>
             </div>
 
             <div>
-              <strong>목표</strong>
-              <span>시민 신뢰와 행정 신뢰를 유지하면서 규칙 오염을 억제</span>
+              <span>목표</span>
+              <strong>시민 신뢰와 행정 신뢰를 유지하면서 규칙 오염을 억제</strong>
             </div>
           </div>
 
-          <button className="primary-button" onClick={startGame}>
+          <button className="primary-button" type="button" onClick={startGame}>
             심사 시작
           </button>
         </section>
@@ -845,17 +1097,17 @@ export default function GameScreen() {
       <main className="game-shell ending-mode">
         <section className="ending-card">
           <p className="eyebrow">FINAL REPORT</p>
+
           <h1>{ending.title}</h1>
-          <p className="ending-grade">{ending.grade}</p>
-          <p className="ending-desc">{ending.description}</p>
+          <strong className="ending-grade">{ending.grade}</strong>
+
+          <SentenceText className="ending-desc" text={ending.description} />
 
           <div className="ending-grid">
             {statOrder.map((key) => (
               <div className="ending-stat" key={key}>
                 <span>{statLabels[key]}</span>
-                <strong className={getStatClass(key, stats[key])}>
-                  {stats[key]}
-                </strong>
+                <strong>{stats[key]}</strong>
               </div>
             ))}
           </div>
@@ -890,10 +1142,12 @@ export default function GameScreen() {
             )}
           </div>
 
-          <button className="primary-button" onClick={startGame}>
+          <button className="primary-button" type="button" onClick={startGame}>
             다시 심사하기
           </button>
         </section>
+
+        {renderStatChangePopup()}
       </main>
     );
   }
@@ -902,8 +1156,7 @@ export default function GameScreen() {
     <main className="game-shell play-mode">
       <header className="game-header">
         <div>
-          <p className="eyebrow">JUDGEMENT PLEASE</p>
-          <h1>예외 심사관</h1>
+          <h1>JUDGEMENT PLEASE</h1>
         </div>
 
         <div className="header-actions">
@@ -913,70 +1166,77 @@ export default function GameScreen() {
 
           <button type="button" onClick={() => setOpenModal("precedents")}>
             전례 기록부
-            {precedents.length > 0 && <span>{precedents.length}</span>}
+            {precedents.length > 0 && (
+              <span className="nav-badge">{precedents.length}</span>
+            )}
           </button>
 
           <button type="button" onClick={() => setOpenModal("verifications")}>
             사후 검증
             {pendingVerifications.length > 0 && (
-              <span>{pendingVerifications.length}</span>
+              <span className="nav-badge">{pendingVerifications.length}</span>
             )}
           </button>
 
           <button type="button" onClick={() => setOpenModal("history")}>
             판단 기록
-            {history.length > 0 && <span>{history.length}</span>}
+            {history.length > 0 && (
+              <span className="nav-badge">{history.length}</span>
+            )}
           </button>
 
-          <strong className="case-progress">CASE {progressText}</strong>
+          <span className="case-progress">CASE {progressText}</span>
         </div>
       </header>
 
-      <section className="play-grid">
-        <article className="panel case-panel compact-case-panel">
-          <div className="case-topline">
-            <span>{currentCase.category}</span>
-            <span>#{currentCase.id}</span>
+      <div className="play-grid">
+        <section className="case-panel">
+          <div className="case-panel-top">
+            <span className="case-category">{currentCase.category}</span>
+            <span className="case-id">#{currentCase.id}</span>
           </div>
 
           <h2>{currentCase.title}</h2>
-          <p className="applicant">신청자: {currentCase.applicant}</p>
-          <p className="summary">{currentCase.summary}</p>
+
+          <p className="applicant-line">
+            신청자: <strong>{currentCase.applicant}</strong>
+          </p>
+
+          <SentenceText className="case-summary" text={currentCase.summary} />
 
           {activePrecedentContexts.length > 0 && (
-            <div className="precedent-context-list">
+            <div className="precedent-context-box">
+              <h3>관련 전례 영향</h3>
+
               {activePrecedentContexts.map((item) => (
-                <div className="precedent-context" key={item.key}>
+                <div key={item.key}>
                   <strong>{precedentLabels[item.key].title}</strong>
-                  <p>{item.text}</p>
+                  <SentenceText text={item.text} />
                 </div>
               ))}
             </div>
           )}
 
           {currentCase.caseType === "verification" && (
-            <div className="verification-alert">
-              이 사례는 이전 조건부 승인에 대한 사후 검증입니다. 여기서의
-              판단은 조건부 승인의 책임을 정리하는 역할을 합니다.
+            <div className="special-notice notice-verification">
+              <SentenceText text="이 사례는 이전 조건부 승인에 대한 사후 검증입니다. 여기서의 판단은 조건부 승인의 책임을 정리하는 역할을 합니다." />
             </div>
           )}
 
           {currentCase.caseType === "backlash" && (
-            <div className="verification-alert">
-              이 사례는 기각 판단이 누적되었을 때 발생하는 시민 반발입니다.
-              일반 신청 심사가 아니라, 이전 판단을 재검토할지 결정하는 장면입니다.
+            <div className="special-notice notice-backlash">
+              <SentenceText text="이 사례는 기각 판단이 누적되었을 때 발생하는 시민 반발입니다. 일반 신청 심사가 아니라, 이전 판단을 재검토할지 결정하는 장면입니다." />
             </div>
           )}
 
           {currentCase.caseType === "final" && (
-            <div className="verification-alert">
-              최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라,
-              지금까지 만든 전례를 유지·정비·폐기할지 결정합니다.
+            <div className="special-notice notice-final">
+              <SentenceText text="최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라, 지금까지 만든 전례를 유지·정비·폐기할지 결정합니다." />
             </div>
           )}
 
           <div className="case-info-grid">
-            <div className="info-block">
+            <div className="case-info-card">
               <h3>제출 서류</h3>
               <ul>
                 {currentCase.documents.map((doc) => (
@@ -985,7 +1245,7 @@ export default function GameScreen() {
               </ul>
             </div>
 
-            <div className="info-block">
+            <div className="case-info-card">
               <h3>기록 조회</h3>
               <ul>
                 {currentCase.records.map((record) => (
@@ -994,7 +1254,7 @@ export default function GameScreen() {
               </ul>
             </div>
 
-            <div className="info-block warning-block">
+            <div className="case-info-card warning-card">
               <h3>주의 정황</h3>
               <ul>
                 {currentCase.riskSigns.map((risk) => (
@@ -1002,47 +1262,46 @@ export default function GameScreen() {
                 ))}
               </ul>
             </div>
-
-            <div className="focus-box">
-              <h3>검토 메모</h3>
-              <p>{currentCase.focus}</p>
-            </div>
           </div>
-        </article>
+
+          <div className="focus-box">
+            <h3>검토 메모</h3>
+            <SentenceText text={currentCase.focus} />
+          </div>
+        </section>
 
         <aside className="decision-panel">
-          <section className="panel choice-card">
-            <div className="choice-card-header">
-              <p className="eyebrow">DECISION</p>
-              <h2>판단 선택</h2>
-            </div>
+          <div className="decision-panel-head">
+            <p className="section-kicker">DECISION</p>
+            <h2>판단 선택</h2>
+          </div>
 
-            <div className="choice-panel">
-              {choiceOrder.map((choice) => (
-                <button
-                  className="choice-button simple-choice-button"
-                  key={choice}
-                  onClick={() => handleChoice(choice)}
-                >
-                  <strong>{getChoiceLabelForCase(currentCase, choice)}</strong>
-                </button>
-              ))}
-            </div>
-          </section>
+          <div className="choice-list">
+            {choiceOrder.map((choice) => (
+              <button
+                className="choice-button"
+                key={choice}
+                type="button"
+                onClick={() => handleChoice(choice)}
+              >
+                {getChoiceLabelForCase(currentCase, choice)}
+              </button>
+            ))}
+          </div>
 
-          <section className="result-panel">
-            <strong>직전 판단 결과</strong>
-
+          <div className="result-panel">
+            <span>직전 판단 결과</span>
             {lastResult ? (
-              <p>{lastResult}</p>
+              <SentenceText text={lastResult} />
             ) : (
               <p className="empty-text">아직 판단 결과가 없습니다.</p>
             )}
-          </section>
+          </div>
         </aside>
-      </section>
+      </div>
 
       {renderModal()}
+      {renderStatChangePopup()}
     </main>
   );
 }
