@@ -80,20 +80,22 @@ export function decideEnding(
   ).length;
 
   const pendingRiskScore = pendingVerifications.reduce((sum, item) => {
-    const riskWeight = item.risk === "high" ? 2.5 : item.risk === "medium" ? 1.2 : 0.6;
+    const riskWeight =
+      item.risk === "high" ? 2.35 : item.risk === "medium" ? 1.1 : 0.55;
+
     return sum + riskWeight * Math.max(1, item.count);
   }, 0);
 
-  if (unresolvedHighRisk >= 2 || pendingRiskScore >= 7.5) {
+  if (unresolvedHighRisk >= 3 || pendingRiskScore >= 9.2) {
     return {
-      title: "미검증 전례 누적 엔딩",
+      title: "미검증 판단 누적 엔딩",
       grade: "사후 검증 실패",
       description:
-        "조건부 승인을 통해 빠르게 구제한 사건이 너무 많이 남았다. 감사국은 예외 심사국이 감당할 수 있는 범위를 넘어서 책임을 뒤로 미루었다고 판단했다.",
+        "조건부 승인을 통해 빠르게 구제한 사건의 확인 책임이 너무 많이 남았다. 감사국은 예외 심사국이 감당할 수 있는 범위를 넘어서 책임을 뒤로 미루었다고 판단했다.",
     };
   }
 
-  if (stats.citizenTrust <= 18 && rejectCount >= 7) {
+  if (stats.citizenTrust <= 15 && rejectCount >= 8) {
     return {
       title: "시민 불신 폭발 엔딩",
       grade: "시민 불신",
@@ -102,19 +104,19 @@ export function decideEnding(
     };
   }
 
-  if (stats.rulePollution >= 88 || stats.adminTrust <= 18) {
+  if (stats.rulePollution >= 94 || stats.adminTrust <= 13) {
     return {
       title: "예외 심사국 폐지 엔딩",
       grade: "폐지",
       description:
-        "전례 악용과 행정 불신이 누적되었다. 감사국은 예외 심사국을 더 이상 통제 가능한 조직으로 보지 않았고, 기관은 폐지되었다.",
+        "이전 결정의 악용과 행정 불신이 누적되었다. 감사국은 예외 심사국을 더 이상 통제 가능한 조직으로 보지 않았고, 기관은 폐지되었다.",
     };
   }
 
   if (
     hasCorporatePrecedent &&
-    stats.rulePollution >= 68 &&
-    stats.adminTrust < 55
+    stats.rulePollution >= 76 &&
+    stats.adminTrust < 48
   ) {
     return {
       title: "부패 의혹 엔딩",
@@ -125,12 +127,12 @@ export function decideEnding(
   }
 
   if (
-    stats.citizenTrust >= 64 &&
-    stats.adminTrust >= 65 &&
-    stats.consistency >= 60 &&
-    stats.rulePollution <= 45 &&
-    unresolvedHighRisk === 0 &&
-    pendingRiskScore <= 4.5
+    stats.citizenTrust >= 62 &&
+    stats.adminTrust >= 61 &&
+    stats.consistency >= 56 &&
+    stats.rulePollution <= 54 &&
+    unresolvedHighRisk <= 1 &&
+    pendingRiskScore <= 5.8
   ) {
     return {
       title: "굿엔딩: 예외 심사국 정식 제도화",
@@ -141,18 +143,18 @@ export function decideEnding(
   }
 
   if (
-    stats.rulePollution >= 74 ||
-    (stats.rulePollution >= 60 && conditionalCount + approveCount >= 7)
+    stats.rulePollution >= 80 ||
+    (stats.rulePollution >= 68 && conditionalCount + approveCount >= 8)
   ) {
     return {
-      title: "오염된 전례 엔딩",
-      grade: "전례 오염",
+      title: "흐려진 기준 엔딩",
+      grade: "기준 오염",
       description:
-        "좋은 의도로 만든 예외 판단이 지나치게 넓어졌다. 시민과 단체는 전례를 권리처럼 요구했고, 브로커와 이해관계자들은 그 틈을 이용하기 시작했다.",
+        "좋은 의도로 만든 예외 판단의 범위가 지나치게 넓어졌다. 시민과 단체는 이전 결정을 권리처럼 요구했고, 브로커와 이해관계자들은 그 틈을 이용하기 시작했다.",
     };
   }
 
-  if (stats.citizenTrust >= 76 && stats.adminTrust < 52) {
+  if (stats.citizenTrust >= 78 && stats.adminTrust < 45) {
     return {
       title: "시민의 예외 심사관 엔딩",
       grade: "시민 신뢰 우세",
@@ -161,7 +163,7 @@ export function decideEnding(
     };
   }
 
-  if (stats.adminTrust >= 76 && stats.citizenTrust < 52) {
+  if (stats.adminTrust >= 78 && stats.citizenTrust < 45) {
     return {
       title: "차가운 예외 심사관 엔딩",
       grade: "행정 신뢰 우세",
@@ -170,7 +172,7 @@ export function decideEnding(
     };
   }
 
-  if (rejectCount >= 8 && stats.rulePollution <= 30) {
+  if (rejectCount >= 9 && stats.rulePollution <= 28) {
     return {
       title: "닫힌 창구 엔딩",
       grade: "예외 축소",

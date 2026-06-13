@@ -18,10 +18,10 @@ type OutcomeProfile =
   | "verification";
 
 export const initialStats: Stats = {
-  citizenTrust: 50,
-  adminTrust: 50,
-  consistency: 50,
-  rulePollution: 10,
+  citizenTrust: 54,
+  adminTrust: 54,
+  consistency: 53,
+  rulePollution: 9,
 };
 
 export const choiceLabels: Record<ChoiceKey, string> = {
@@ -35,34 +35,34 @@ export const precedentLabels: Record<
   { title: string; description: string }
 > = {
   emergencyMedical: {
-    title: "긴급 치료 예외 전례",
+    title: "긴급 치료 예외 기준",
     description:
-      "긴급 치료 상황에서는 일부 서류가 부족해도 대체 증거와 사후 검증 조건이 있으면 임시 지원할 수 있다는 전례.",
+      "긴급 치료 상황에서는 일부 서류가 부족해도 대체 증거와 사후 검증 조건이 있으면 임시 지원할 수 있다는 판단 근거.",
   },
   residenceDelay: {
-    title: "기한 초과 체류 예외 전례",
+    title: "기한 초과 체류 인정 기준",
     description:
-      "불가피한 사유와 대체 기록이 확인되는 경우, 기한 초과 신청을 제한적으로 인정할 수 있다는 전례.",
+      "불가피한 사유와 대체 기록이 확인되는 경우, 기한 초과 신청을 제한적으로 인정할 수 있다는 판단 근거.",
   },
   educationRelief: {
-    title: "교육 기회 구제 전례",
+    title: "교육 기회 구제 기준",
     description:
-      "정량 기준에는 부족하더라도 특수한 가정 사정과 회복 가능성이 확인되면 교육 기회를 일부 구제할 수 있다는 전례.",
+      "정량 기준에는 부족하더라도 특수한 가정 사정과 회복 가능성이 확인되면 교육 기회를 일부 구제할 수 있다는 판단 근거.",
   },
   protectiveHousing: {
-    title: "보호 거주 비공개 전례",
+    title: "보호 거주 비공개 처리 기준",
     description:
-      "신변 위험이 있는 신청자는 주소와 일부 신원 자료를 비공개 처리한 상태로 임시 보호를 받을 수 있다는 전례.",
+      "신변 위험이 있는 신청자는 주소와 일부 신원 자료를 비공개 처리한 상태로 임시 보호를 받을 수 있다는 판단 근거.",
   },
   safetyStandard: {
-    title: "안전 기준 조건부 완화 전례",
+    title: "안전 기준 조건부 완화 기록",
     description:
-      "공동체 행사나 임시 운영에서 일부 안전 기준을 조건부로 완화할 수 있지만, 사고 발생 시 책임이 커지는 전례.",
+      "공동체 행사나 임시 운영에서 일부 안전 기준을 조건부로 완화할 수 있지만, 사고 발생 시 책임이 커지는 판단 근거.",
   },
   corporateException: {
-    title: "기업 특별 허가 전례",
+    title: "기업 특별 허가 기록",
     description:
-      "지역 경제와 고용 유지를 이유로 기업 규제 예외를 임시 허용할 수 있다는 전례. 특혜 논란과 악용 위험이 크다.",
+      "지역 경제와 고용 유지를 이유로 기업 규제 예외를 임시 허용할 수 있다는 판단 근거. 특혜 논란과 악용 위험이 크다.",
   },
 };
 
@@ -71,49 +71,49 @@ export const verificationTemplates = {
     title: "의료 조건부 승인 사후 검증",
     note: "지원 이후 원본 서류와 실제 치료 진행 여부를 확인해야 한다.",
     risk: "medium",
-    dueAfterCases: 3,
+    dueAfterCases: 4,
     verificationCaseId: "case-v01",
   },
   residence: {
     title: "체류 조건부 승인 사후 검증",
     note: "병원·항공사·신고 기록 등 지연 사유의 원본 자료를 다시 확인해야 한다.",
     risk: "medium",
-    dueAfterCases: 4,
+    dueAfterCases: 5,
     verificationCaseId: "case-v02",
   },
   education: {
     title: "교육 구제 조건부 승인 사후 검증",
     note: "장학·입학·징계 관련 보완 자료가 실제 기준을 충족하는지 확인해야 한다.",
     risk: "low",
-    dueAfterCases: 4,
+    dueAfterCases: 5,
     verificationCaseId: "case-v03",
   },
   housing: {
     title: "보호 거주 조건부 승인 사후 검증",
     note: "비공개 자료와 상담 기관 확인을 사후 대조해야 한다.",
     risk: "medium",
-    dueAfterCases: 4,
+    dueAfterCases: 5,
     verificationCaseId: "case-v04",
   },
   welfare: {
     title: "복지 조건부 승인 사후 검증",
     note: "임시 지원 이후 보완 자료와 실제 사용 내역을 확인해야 한다.",
     risk: "low",
-    dueAfterCases: 4,
+    dueAfterCases: 5,
     verificationCaseId: "case-v05",
   },
   safety: {
     title: "행사 안전 조건부 승인 사후 검증",
     note: "안전 검사와 현장 조건 이행 여부를 확인해야 한다.",
-    risk: "high",
-    dueAfterCases: 5,
+    risk: "medium",
+    dueAfterCases: 6,
     verificationCaseId: "case-v06",
   },
   corporate: {
     title: "기업·단체 조건부 허가 사후 검증",
     note: "조건부 허가 이후 실제 이행 여부와 자료 조작 가능성을 확인해야 한다.",
     risk: "high",
-    dueAfterCases: 5,
+    dueAfterCases: 6,
     verificationCaseId: "case-v07",
   },
 } satisfies Record<string, VerificationTemplate>;
@@ -123,34 +123,34 @@ const profileEffects: Record<
   Record<ChoiceKey, CaseOutcome["effect"]>
 > = {
   relief: {
-    approve: { citizenTrust: 11, adminTrust: -7, consistency: -5, rulePollution: 10 },
-    conditional: { citizenTrust: 4, adminTrust: 1, consistency: 2, rulePollution: 5 },
-    reject: { citizenTrust: -12, adminTrust: 5, consistency: 4, rulePollution: -2 },
+    approve: { citizenTrust: 9, adminTrust: -4, consistency: -3, rulePollution: 6 },
+    conditional: { citizenTrust: 5, adminTrust: 2, consistency: 2, rulePollution: 3 },
+    reject: { citizenTrust: -7, adminTrust: 4, consistency: 4, rulePollution: -2 },
   },
   risky: {
-    approve: { citizenTrust: 7, adminTrust: -8, consistency: -6, rulePollution: 12 },
-    conditional: { citizenTrust: 3, adminTrust: 0, consistency: 1, rulePollution: 7 },
-    reject: { citizenTrust: -8, adminTrust: 6, consistency: 5, rulePollution: -4 },
+    approve: { citizenTrust: 5, adminTrust: -5, consistency: -4, rulePollution: 8 },
+    conditional: { citizenTrust: 4, adminTrust: 2, consistency: 2, rulePollution: 4 },
+    reject: { citizenTrust: -5, adminTrust: 5, consistency: 4, rulePollution: -3 },
   },
   fraud: {
-    approve: { citizenTrust: 1, adminTrust: -16, consistency: -8, rulePollution: 22 },
-    conditional: { citizenTrust: -1, adminTrust: -9, consistency: -3, rulePollution: 14 },
-    reject: { citizenTrust: -3, adminTrust: 10, consistency: 6, rulePollution: -8 },
+    approve: { citizenTrust: -2, adminTrust: -10, consistency: -6, rulePollution: 14 },
+    conditional: { citizenTrust: -1, adminTrust: -5, consistency: -2, rulePollution: 8 },
+    reject: { citizenTrust: -1, adminTrust: 10, consistency: 7, rulePollution: -8 },
   },
   corporate: {
-    approve: { citizenTrust: -8, adminTrust: -11, consistency: -6, rulePollution: 20 },
-    conditional: { citizenTrust: -6, adminTrust: -2, consistency: 0, rulePollution: 12 },
-    reject: { citizenTrust: 4, adminTrust: -2, consistency: 5, rulePollution: -6 },
+    approve: { citizenTrust: -6, adminTrust: -8, consistency: -5, rulePollution: 14 },
+    conditional: { citizenTrust: -3, adminTrust: 0, consistency: 2, rulePollution: 7 },
+    reject: { citizenTrust: 3, adminTrust: 1, consistency: 5, rulePollution: -5 },
   },
   backlash: {
-    approve: { citizenTrust: 11, adminTrust: -7, consistency: -5, rulePollution: 9 },
-    conditional: { citizenTrust: 4, adminTrust: 2, consistency: 3, rulePollution: 3 },
-    reject: { citizenTrust: -11, adminTrust: 6, consistency: 4, rulePollution: -3 },
+    approve: { citizenTrust: 9, adminTrust: -4, consistency: -3, rulePollution: 5 },
+    conditional: { citizenTrust: 6, adminTrust: 3, consistency: 3, rulePollution: 2 },
+    reject: { citizenTrust: -7, adminTrust: 5, consistency: 4, rulePollution: -2 },
   },
   verification: {
-    approve: { citizenTrust: 3, adminTrust: -9, consistency: -5, rulePollution: 12 },
-    conditional: { citizenTrust: 1, adminTrust: 7, consistency: 7, rulePollution: -7 },
-    reject: { citizenTrust: -7, adminTrust: 7, consistency: -2, rulePollution: -6 },
+    approve: { citizenTrust: 3, adminTrust: -4, consistency: -2, rulePollution: 6 },
+    conditional: { citizenTrust: 2, adminTrust: 8, consistency: 7, rulePollution: -8 },
+    reject: { citizenTrust: -4, adminTrust: 6, consistency: -1, rulePollution: -5 },
   },
 };
 
@@ -178,7 +178,7 @@ function getDefaultOutcomeText(profile: OutcomeProfile, choice: ChoiceKey) {
       return "정상 건은 확정하고 의심 건은 적용 조건을 좁혀 재정리했다. 사후 검증 부담은 줄고 기준은 보강되었다.";
     }
 
-    return "의심 사례를 무효 처리하고 해당 전례 적용을 제한했다. 행정 부담은 줄었지만 실제 구제자까지 피해를 볼 수 있다.";
+    return "의심 사례를 무효 처리하고 해당 기준 적용을 제한했다. 행정 부담은 줄었지만 실제 구제자까지 피해를 볼 수 있다.";
   }
 
   if (profile === "backlash") {
@@ -249,7 +249,7 @@ export const casePool: CaseData[] = [
     records: ["수술 일정은 병원에 확인 가능", "최근 의료비 지출 증가", "기존 부정수급 이력 없음"],
     riskSigns: ["지금 승인하면 수술 일정은 지킬 수 있음", "소득 기준 충족 여부는 아직 불명확", "서류 부족 상태에서 지급한 기록이 남음"],
     focus:
-      "정식 승인은 강한 의료 예외 전례를 남긴다. 조건부 승인은 수술을 허용하되 소득 증빙과 병원 원본 기록을 나중에 검증해야 한다.",
+      "정식 승인은 강한 의료 예외 처리 기준을 남긴다. 조건부 승인은 수술을 허용하되 소득 증빙과 병원 원본 기록을 나중에 검증해야 한다.",
     relatedPrecedent: "emergencyMedical",
     outcomes: mkOutcomes({
       profile: "relief",
@@ -257,7 +257,7 @@ export const casePool: CaseData[] = [
       verification: verificationTemplates.medical,
       text: {
         approve:
-          "소득 증빙 없이 정식 승인했다. 신청자는 수술을 받을 수 있게 되었지만, 의료비 지원 기준이 넓어졌다는 강한 전례가 남았다.",
+          "소득 증빙 없이 정식 승인했다. 신청자는 수술을 받을 수 있게 되었지만, 의료비 지원 기준이 넓어졌다는 강한 처리 기준이 남았다.",
         conditional:
           "수술비를 먼저 지원하되, 수술 후 소득 증빙과 병원 원본 기록을 제출하도록 조건을 달았다.",
         reject:
@@ -279,7 +279,7 @@ export const casePool: CaseData[] = [
     records: ["응급실 방문 기록 확인", "치료비 미납 상태", "이전 지원 이력 없음"],
     riskSigns: ["치료는 이미 이루어짐", "최종 청구 금액은 확정 전", "지급이 늦어지면 채무 문제가 생길 수 있음"],
     focus:
-      "치료 사실은 분명하지만 금액과 보호자 확인이 부족하다. 먼저 인정하면 의료 예외 전례가 남고, 조건부 승인은 추후 청구서 검증을 요구한다.",
+      "치료 사실은 분명하지만 금액과 보호자 확인이 부족하다. 먼저 인정하면 의료 예외 처리 기준이 남고, 조건부 승인은 추후 청구서 검증을 요구한다.",
     relatedPrecedent: "emergencyMedical",
     outcomes: mkOutcomes({
       profile: "relief",
@@ -301,7 +301,7 @@ export const casePool: CaseData[] = [
     records: ["기한 초과 3일", "입원 기록 일부 확인", "이전 연장 신청 이력 1회"],
     riskSigns: ["날짜가 완전히 맞지 않음", "고의 지연인지 단순 착오인지 불명확", "병원 원본 확인은 가능"],
     focus:
-      "기한 초과를 인정하면 체류 지연 예외가 전례가 된다. 조건부 승인은 병원 원본과 출입 기록을 나중에 대조해야 한다.",
+      "기한 초과를 인정하면 체류 지연 예외가 판단 기준이 된다. 조건부 승인은 병원 원본과 출입 기록을 나중에 대조해야 한다.",
     relatedPrecedent: "residenceDelay",
     outcomes: mkOutcomes({
       profile: "risky",
@@ -323,7 +323,7 @@ export const casePool: CaseData[] = [
     records: ["기한 초과 4일", "도난 신고 접수 확인", "이전 위반 기록 없음"],
     riskSigns: ["도난 신고는 사실로 보임", "체류 서류가 도난 물품 목록에 명확하지 않음", "기한 초과는 이미 발생함"],
     focus:
-      "신고 기록만으로 서류 지연을 인정하면 체류 예외 전례가 생긴다. 조건부 승인은 도난 물품 원본 기록 확인을 남긴다.",
+      "신고 기록만으로 서류 지연을 인정하면 체류 예외 판단 기준이 생긴다. 조건부 승인은 도난 물품 원본 기록 확인을 남긴다.",
     relatedPrecedent: "residenceDelay",
     outcomes: mkOutcomes({
       profile: "risky",
@@ -345,7 +345,7 @@ export const casePool: CaseData[] = [
     records: ["소득 기준 4% 초과", "성적 기준 충족", "이전 장학금 수혜 이력 없음"],
     riskSigns: ["공식 기준으로는 대상이 아님", "실제 지출 부담은 커 보임", "예외 인정 시 유사 신청이 늘 수 있음"],
     focus:
-      "정식 승인은 소득 기준 밖 장학 구제 전례가 된다. 조건부 승인은 학기 중 재심사와 지출 증빙 검증을 요구한다.",
+      "정식 승인은 소득 기준 밖 장학 구제 판단 기준이 된다. 조건부 승인은 학기 중 재심사와 지출 증빙 검증을 요구한다.",
     relatedPrecedent: "educationRelief",
     outcomes: mkOutcomes({
       profile: "relief",
@@ -367,7 +367,7 @@ export const casePool: CaseData[] = [
     records: ["성적 기준 충족", "서류 제출 2일 지연", "보호자 입원 기록 확인"],
     riskSigns: ["기한을 넘긴 것은 사실", "사유는 일부 확인됨", "예외 인정 시 입학 기한의 의미가 약해질 수 있음"],
     focus:
-      "지원자의 자격은 충분해 보인다. 다만 기한 예외를 인정하면 교육 구제 전례가 입학 절차까지 확장된다.",
+      "지원자의 자격은 충분해 보인다. 다만 기한 예외를 인정하면 교육 구제 판단 기준이 입학 절차까지 확장된다.",
     relatedPrecedent: "educationRelief",
     outcomes: mkOutcomes({
       profile: "relief",
@@ -389,7 +389,7 @@ export const casePool: CaseData[] = [
     records: ["최근 신고 2회", "상담 기관 연락 가능", "가족 주소와 현재 위치 불일치"],
     riskSigns: ["신변 위험 가능성 있음", "자료 일부를 확인할 수 없음", "비공개 범위가 넓어질 수 있음"],
     focus:
-      "정식 승인은 비공개 보호 거주 전례가 된다. 조건부 승인은 상담 기관과 경찰 기록을 사후 대조해야 한다.",
+      "정식 승인은 비공개 보호 거주 판단 기준이 된다. 조건부 승인은 상담 기관과 경찰 기록을 사후 대조해야 한다.",
     relatedPrecedent: "protectiveHousing",
     outcomes: mkOutcomes({
       profile: "relief",
@@ -450,7 +450,7 @@ export const casePool: CaseData[] = [
     records: ["최근 3개월 소득 감소", "부정수급 이력 없음", "긴급 지급 요청은 처음"],
     riskSigns: ["퇴거 위험이 가까움", "조기 지급 기준이 느슨해질 수 있음", "사용 내역 확인이 필요함"],
     focus:
-      "정식 승인은 선지급 전례를 만든다. 조건부 승인은 사용 내역과 체납 해소 여부를 사후 확인해야 한다.",
+      "정식 승인은 선지급 유사한 요구의 근거가 된다. 조건부 승인은 사용 내역과 체납 해소 여부를 사후 확인해야 한다.",
     outcomes: mkOutcomes({
       profile: "relief",
       verification: verificationTemplates.welfare,
@@ -470,7 +470,7 @@ export const casePool: CaseData[] = [
     records: ["지난해 사고 이력 없음", "예상 참여 인원 증가", "구조 검사 결과 미도착"],
     riskSigns: ["지역 여론은 우호적", "핵심 안전 검사는 미완료", "사고 발생 시 예외 심사국 책임이 커짐"],
     focus:
-      "정식 승인은 안전 기준 완화 전례를 강하게 남긴다. 조건부 승인은 검사 통과와 인원 제한을 나중에 확인해야 한다.",
+      "정식 승인은 안전 기준 완화 강한 처리 기준을 남긴다. 조건부 승인은 검사 통과와 인원 제한을 나중에 확인해야 한다.",
     relatedPrecedent: "safetyStandard",
     outcomes: mkOutcomes({
       profile: "risky",
@@ -492,7 +492,7 @@ export const casePool: CaseData[] = [
     records: ["최근 배출 기준 위반 1회", "지역 고용 의존도 높음", "상관의 신속 처리 요청"],
     riskSigns: ["고용 문제와 환경 문제가 충돌함", "자료가 기업 자체 보고서 중심임", "상관의 압박이 있음"],
     focus:
-      "기업 예외는 시민 구제보다 특혜 논란이 크다. 정식 승인은 강한 기업 특별 허가 전례가 되고, 조건부 승인은 고위험 검증을 남긴다.",
+      "기업 예외는 시민 구제보다 특혜 논란이 크다. 정식 승인은 강한 기업 특별 허가 기록가 되고, 조건부 승인은 고위험 검증을 남긴다.",
     relatedPrecedent: "corporateException",
     outcomes: mkOutcomes({
       profile: "corporate",
@@ -514,12 +514,12 @@ export const casePool: CaseData[] = [
       "다른 신청자가 응급 치료비 지원을 요청했다. 병원 기록과 보호자 진술은 제출되었지만, 소득 증빙은 원본이 아니라 사본이다.",
     documents: ["응급실 진료 기록", "보호자 진술서", "수술 일정표", "소득 증빙 사본"],
     records: ["부정수급 이력 없음", "병원 코드 정상", "서류 원본 일부 미제출"],
-    riskSigns: ["이전 의료 예외와 비슷한 구조", "사본만으로는 최종 확인 어려움", "기각 시 전례와 충돌할 수 있음"],
+    riskSigns: ["이전 의료 예외와 비슷한 구조", "사본만으로는 최종 확인 어려움", "기각 시 판단 기록와 충돌할 수 있음"],
     focus:
       "이미 만든 의료 예외 기준을 이번에도 적용할지, 원본 부족을 이유로 거절할지 판단해야 한다.",
     precedentContext: {
       emergencyMedical:
-        "긴급 치료 예외 전례가 생성되어, 신청자는 비슷한 방식의 처리를 기대하고 있다.",
+        "긴급 치료 예외 기준가 생성되어, 신청자는 비슷한 방식의 처리를 기대하고 있다.",
     },
     outcomes: mkOutcomes({
       profile: "relief",
@@ -544,7 +544,7 @@ export const casePool: CaseData[] = [
       "수술비가 아닌 약값도 긴급 치료 예외로 볼 수 있는지 판단해야 한다.",
     precedentContext: {
       emergencyMedical:
-        "긴급 치료 전례가 있으면 의료비 지원 요구가 수술비 밖으로 확장될 수 있다.",
+        "긴급 치료 판단 기록가 있으면 의료비 지원 요구가 수술비 밖으로 확장될 수 있다.",
     },
     outcomes: mkOutcomes({
       profile: "relief",
@@ -564,12 +564,12 @@ export const casePool: CaseData[] = [
       "신청자는 퇴원 지연으로 체류 연장 신청이 늦어졌다고 주장한다. 병원 기록은 있지만 보호자 진술과 날짜가 하루 차이 난다.",
     documents: ["퇴원 지연 확인서", "체류 연장 신청서", "보호자 진술서", "진료비 영수증"],
     records: ["기한 초과 2일", "병원 원본 확인 가능", "이전 위반 이력 없음"],
-    riskSigns: ["날짜 차이는 작음", "전례와 비슷한 구조", "반복 적용 시 기준이 느슨해질 수 있음"],
+    riskSigns: ["날짜 차이는 작음", "판단 기록와 비슷한 구조", "반복 적용 시 기준이 느슨해질 수 있음"],
     focus:
-      "작은 날짜 차이를 허용할지, 전례가 있어도 기한 기준을 엄격히 볼지 판단해야 한다.",
+      "작은 날짜 차이를 허용할지, 판단 기록가 있어도 기한 기준을 엄격히 볼지 판단해야 한다.",
     precedentContext: {
       residenceDelay:
-        "기한 초과 체류 예외 전례가 있어, 이번 신청은 이전 판단과 비교될 수 있다.",
+        "기한 초과 체류 인정 기준가 있어, 이번 신청은 이전 판단과 비교될 수 있다.",
     },
     outcomes: mkOutcomes({
       profile: "risky",
@@ -594,7 +594,7 @@ export const casePool: CaseData[] = [
       "불가피한 사유로 볼 수 있지만, 원본 확인 없이 예외를 인정해도 되는지가 문제다.",
     precedentContext: {
       residenceDelay:
-        "기한 초과 체류 예외 전례가 있으면 작은 초과도 예외 처리 요구로 이어질 수 있다.",
+        "기한 초과 체류 인정 기준가 있으면 작은 초과도 예외 처리 요구로 이어질 수 있다.",
     },
     outcomes: mkOutcomes({
       profile: "risky",
@@ -614,12 +614,12 @@ export const casePool: CaseData[] = [
       "신청자는 성적 기준을 충족했지만 소득 증빙 제출 시점 문제로 장학 대상에서 제외되었다. 가족 돌봄 기록은 함께 제출되었다.",
     documents: ["장학 신청서", "가족 돌봄 확인서", "소득 증빙 지연 사유서", "성적 증명서"],
     records: ["성적 기준 충족", "소득 증빙 제출 지연", "지도교수 추천 있음"],
-    riskSigns: ["자격은 있어 보임", "제출 시점은 어김", "교육 구제 전례가 확대될 수 있음"],
+    riskSigns: ["자격은 있어 보임", "제출 시점은 어김", "교육 구제 기준가 확대될 수 있음"],
     focus:
       "실제 자격이 충분해 보이는 신청자에게 제출 시점 위반을 얼마나 엄격히 적용할지 판단해야 한다.",
     precedentContext: {
       educationRelief:
-        "교육 기회 구제 전례 이후, 비슷한 장학 구제 신청이 늘고 있다.",
+        "교육 기회 구제 기준 이후, 비슷한 장학 구제 신청이 늘고 있다.",
     },
     outcomes: mkOutcomes({
       profile: "relief",
@@ -639,12 +639,12 @@ export const casePool: CaseData[] = [
       "신청자는 과거 교내 징계 기록 때문에 장학 추천에서 제외되었다. 이후 상담 이수와 피해 보상 기록은 제출되어 있다.",
     documents: ["징계 기록 관련 신청서", "상담 이수 확인서", "피해 보상 확인서", "장학 추천 제외 통보서"],
     records: ["징계 후 2년 경과", "추가 징계 없음", "합의 기록 존재"],
-    riskSigns: ["재기 기회와 기록 보존이 충돌함", "학교 측은 신중 의견", "교육 구제 전례가 다른 영역으로 확장될 수 있음"],
+    riskSigns: ["재기 기회와 기록 보존이 충돌함", "학교 측은 신중 의견", "교육 구제 기준가 다른 영역으로 확장될 수 있음"],
     focus:
       "장학 기회를 위해 과거 기록의 불이익을 줄일 수 있는지 판단해야 한다.",
     precedentContext: {
       educationRelief:
-        "교육 구제 전례는 장학 기준뿐 아니라 기록 구제 요구로도 확장될 수 있다.",
+        "교육 구제 기준는 장학 기준뿐 아니라 기록 구제 요구로도 확장될 수 있다.",
     },
     outcomes: mkOutcomes({
       profile: "risky",
@@ -669,7 +669,7 @@ export const casePool: CaseData[] = [
       "신청자 보호와 행정 검증 가능성을 동시에 확보할 수 있는지 판단해야 한다.",
     precedentContext: {
       protectiveHousing:
-        "보호 거주 비공개 전례가 있어, 비공개 처리 범위가 다시 쟁점이 되었다.",
+        "보호 거주 비공개 처리 기준가 있어, 비공개 처리 범위가 다시 쟁점이 되었다.",
     },
     outcomes: mkOutcomes({
       profile: "relief",
@@ -694,7 +694,7 @@ export const casePool: CaseData[] = [
       "지역 활성화와 안전 검증 사이에서 어느 쪽을 우선할지 판단해야 한다.",
     precedentContext: {
       safetyStandard:
-        "안전 기준 조건부 완화 전례가 있으면, 유사 행사가 같은 처리를 기대한다.",
+        "안전 기준 조건부 완화 기록가 있으면, 유사 행사가 같은 처리를 기대한다.",
     },
     outcomes: mkOutcomes({
       profile: "risky",
@@ -716,12 +716,12 @@ export const casePool: CaseData[] = [
       "신청자는 긴급 수술비 지원을 요청했다. 병원 방문 기록은 실제로 존재하지만, 제출된 수술 예약증의 발급 시간이 진료 시간보다 앞서 있다.",
     documents: ["수술 예약증", "진료 기록 사본", "대리 신청서", "소득 증빙 미제출"],
     records: ["진료 시간보다 빠른 예약증 발급", "대리인 연락처가 이전 신청과 유사", "병원 코드 반복"],
-    riskSigns: ["실제 병원 방문 기록은 있음", "예약증 시간 순서가 맞지 않음", "전례 문구를 일부 인용함"],
+    riskSigns: ["실제 병원 방문 기록은 있음", "예약증 시간 순서가 맞지 않음", "판단 기록 문구를 일부 인용함"],
     focus:
       "진짜 진료 기록이 있다는 점 때문에 쉽게 기각하기 어렵지만, 예약증 시간은 명백히 이상하다.",
     precedentContext: {
       emergencyMedical:
-        "긴급 치료 전례 이후 의료 신청서에서 유사한 표현과 대리 신청이 증가했다.",
+        "긴급 치료 판단 기록 이후 의료 신청서에서 유사한 표현과 대리 신청이 증가했다.",
     },
     outcomes: mkOutcomes({ profile: "fraud" }),
   },
@@ -739,12 +739,12 @@ export const casePool: CaseData[] = [
       "상담소가 여러 명의 의료비 지원 신청서를 한꺼번에 제출했다. 신청서 문장은 서로 비슷하고, 일부 병원 예약증은 같은 시간대에 발급되어 있다.",
     documents: ["치료비 지원 신청서 묶음", "대리 신청 위임장", "병원 예약증 사본", "상담소 확인서"],
     records: ["동일 대리인 반복 등장", "신청서 문장 구조 유사", "병원 예약증 발급 시간대 집중"],
-    riskSigns: ["일괄 처리하면 빠름", "개별 사정 확인이 부족함", "상담소가 전례 문구를 반복 사용함"],
+    riskSigns: ["일괄 처리하면 빠름", "개별 사정 확인이 부족함", "상담소가 판단 기록 문구를 반복 사용함"],
     focus:
       "실제 도움이 필요한 신청자가 섞여 있을 수 있지만, 묶음 접수 전체를 그대로 믿기에는 위험하다.",
     precedentContext: {
       emergencyMedical:
-        "긴급 치료 예외 전례 이후, 의료 지원 신청서에서 비슷한 문구가 늘었다.",
+        "긴급 치료 예외 기준 이후, 의료 지원 신청서에서 비슷한 문구가 늘었다.",
     },
     outcomes: mkOutcomes({ profile: "fraud" }),
   },
@@ -768,7 +768,7 @@ export const casePool: CaseData[] = [
       "겉으로는 입원 사유가 있어 보이지만, 병원 코드와 연락 가능성이 맞지 않는다.",
     precedentContext: {
       residenceDelay:
-        "기한 초과 체류 전례가 있으면 입원 지연 사유가 반복적으로 제출될 수 있다.",
+        "기한 초과 체류 판단 기록가 있으면 입원 지연 사유가 반복적으로 제출될 수 있다.",
     },
     outcomes: mkOutcomes({ profile: "fraud" }),
   },
@@ -792,7 +792,7 @@ export const casePool: CaseData[] = [
       "진짜 곤란한 학생일 수도 있지만, 장학금 판단의 핵심 근거인 부채 자료가 의심스럽다.",
     precedentContext: {
       educationRelief:
-        "교육 기회 구제 전례 이후, 기준 밖 장학 신청이 늘고 있다.",
+        "교육 기회 구제 기준 이후, 기준 밖 장학 신청이 늘고 있다.",
     },
     outcomes: mkOutcomes({ profile: "fraud" }),
   },
@@ -892,7 +892,7 @@ export const casePool: CaseData[] = [
       "실제 보호가 필요한 사람을 놓치지 않으면서, 반복 대리 신청을 그대로 통과시켜도 되는지 판단해야 한다.",
     precedentContext: {
       protectiveHousing:
-        "보호 거주 비공개 전례가 있으면, 대리 신청과 익명 신청이 함께 증가할 수 있다.",
+        "보호 거주 비공개 처리 기준가 있으면, 대리 신청과 익명 신청이 함께 증가할 수 있다.",
     },
     outcomes: mkOutcomes({ profile: "fraud" }),
   },
@@ -1070,10 +1070,10 @@ export const casePool: CaseData[] = [
     summary:
       "조건부로 인정했던 체류 지연 사례의 원본 자료가 도착했다. 일부는 불가피한 지연으로 확인되었지만, 일부는 날짜 설명이 맞지 않는다.",
     documents: ["병원 원본 기록", "항공사 결항 통지", "출입 기록", "조건부 승인 목록"],
-    records: ["정상 지연 사유 존재", "날짜 불일치 사례 존재", "체류 예외 전례 인용 증가"],
-    riskSigns: ["넓게 인정하면 체류 기한 기준이 약해짐", "좁게 보면 실제 지연자도 피해", "전례 적용 기준 정리 필요"],
+    records: ["정상 지연 사유 존재", "날짜 불일치 사례 존재", "체류 예외 기준 인용 증가"],
+    riskSigns: ["넓게 인정하면 체류 기한 기준이 약해짐", "좁게 보면 실제 지연자도 피해", "기준 적용 기준 정리 필요"],
     focus:
-      "체류 예외 전례가 실제 구제였는지, 기한 기준을 흐린 결정이었는지 정리해야 한다.",
+      "체류 예외 기준가 실제 구제였는지, 기한 기준을 흐린 결정이었는지 정리해야 한다.",
     outcomes: mkOutcomes({ profile: "verification" }),
   },
   {
@@ -1087,10 +1087,10 @@ export const casePool: CaseData[] = [
     summary:
       "조건부로 인정한 교육 구제 사례의 보완 자료가 제출되었다. 일부는 실제 사정이 확인되었지만, 일부는 기준 밖 요구가 반복되고 있다.",
     documents: ["장학 보완 자료", "입학 지연 사유서", "상담 기록", "성적 증명서"],
-    records: ["정상 보완 사례 존재", "기준 밖 신청 증가", "전례 인용 문구 반복"],
+    records: ["정상 보완 사례 존재", "기준 밖 신청 증가", "판단 기록 인용 문구 반복"],
     riskSigns: ["교육 기회 구제 성과 있음", "기준 확대 위험 있음", "일괄 처리는 위험함"],
     focus:
-      "교육 구제 전례를 유지하되 적용 조건을 좁힐지 판단해야 한다.",
+      "교육 구제 기준를 유지하되 적용 조건을 좁힐지 판단해야 한다.",
     outcomes: mkOutcomes({ profile: "verification" }),
   },
   {
@@ -1122,7 +1122,7 @@ export const casePool: CaseData[] = [
       "조건부로 인정한 복지 지원 사례의 사용 내역과 보완 자료가 도착했다. 일부는 실제 곤란이 확인되었지만, 일부는 지출 목적이 불명확하다.",
     documents: ["보완 소득 자료", "지출 증빙", "상담 기록", "임시 지원 목록"],
     records: ["정상 보완 사례 존재", "지출 목적 불명확 사례 존재", "기준 밖 지원 요구 증가"],
-    riskSigns: ["실제 구제와 기준 남용이 섞여 있음", "일괄 처리하면 위험함", "전례 정비 필요"],
+    riskSigns: ["실제 구제와 기준 남용이 섞여 있음", "일괄 처리하면 위험함", "판단 기록 정비 필요"],
     focus:
       "조건부 구제를 유지하되 기준을 좁힐지, 넓게 인정할지 결정해야 한다.",
     outcomes: mkOutcomes({ profile: "verification" }),
@@ -1139,7 +1139,7 @@ export const casePool: CaseData[] = [
       "조건부로 허가한 행사들의 검사 결과가 제출되었다. 일부 행사는 조건을 지켰지만, 일부는 인원 제한과 대피 동선을 어겼다.",
     documents: ["행사 조건부 허가 목록", "안전 검사 결과", "현장 사진", "민원 신고 요약"],
     records: ["조건 이행 사례 존재", "인원 제한 위반 사례 존재", "대피 동선 미준수 보고"],
-    riskSigns: ["공동체 행사는 유지됨", "사고 위험이 실제로 증가함", "안전 전례 정비 필요"],
+    riskSigns: ["공동체 행사는 유지됨", "사고 위험이 실제로 증가함", "안전 판단 기록 정비 필요"],
     focus:
       "안전 조건부 허가가 실제 통제 장치였는지, 형식적인 허가였는지 판단해야 한다.",
     outcomes: mkOutcomes({ profile: "verification" }),
@@ -1166,33 +1166,33 @@ export const casePool: CaseData[] = [
     id: "case-final",
     caseType: "final",
     stage: "final",
-    title: "감사국 최종 전례 정비 요청",
+    title: "감사국 최종 판단 기록 정비 요청",
     applicant: "감사국",
     category: "최종 검토",
     summary:
-      "감사국은 예외 심사국의 예외 판단과 조건부 승인, 전례 적용 사례를 종합 검토하겠다고 통보했다.",
-    documents: ["전례 적용 사례표", "조건부 승인 미검증 목록", "민원 및 언론 반응 요약", "감사국 질의서"],
-    records: ["전례 인용 신청 증가", "조건부 승인 누적", "규칙 오염도와 신뢰도 종합 검토"],
-    riskSigns: ["기관 존속 여부와 연결됨", "전례 정비 필요", "미검증 사례가 있으면 불리함"],
+      "감사국은 예외 심사국의 예외 판단과 조건부 승인, 기준 적용 사례를 종합 검토하겠다고 통보했다.",
+    documents: ["기준 적용 사례표", "조건부 승인 미검증 목록", "민원 및 언론 반응 요약", "감사국 질의서"],
+    records: ["판단 기록 인용 신청 증가", "조건부 승인 누적", "규칙 오염도와 신뢰도 종합 검토"],
+    riskSigns: ["기관 존속 여부와 연결됨", "판단 기록 정비 필요", "미검증 사례가 있으면 불리함"],
     focus:
-      "지금까지 만든 전례를 유지할지, 조건을 좁힐지, 문제 사례를 폐기할지 결정해야 한다.",
+      "지금까지 만든 판단 기록를 유지할지, 조건을 좁힐지, 문제 사례를 폐기할지 결정해야 한다.",
     precedentContext: {
-      emergencyMedical: "긴급 치료 전례는 구제 성과와 대리 신청 문제를 동시에 남겼다.",
-      residenceDelay: "기한 초과 체류 전례는 불가피한 지연 구제와 날짜 기준 논란을 함께 만들었다.",
-      educationRelief: "교육 기회 구제 전례는 긍정적 여론을 얻었지만 기준 밖 신청을 늘렸다.",
-      protectiveHousing: "보호 거주 비공개 전례는 보호 성과와 비공개 범위 논란을 함께 남겼다.",
-      safetyStandard: "안전 기준 완화 전례는 공동체 행사에는 도움이 되었지만 사고 책임 문제가 남았다.",
-      corporateException: "기업 특별 허가 전례는 감사국이 가장 민감하게 보는 항목이다.",
+      emergencyMedical: "긴급 치료 판단 기록는 구제 성과와 대리 신청 문제를 동시에 남겼다.",
+      residenceDelay: "기한 초과 체류 판단 기록는 불가피한 지연 구제와 날짜 기준 논란을 함께 만들었다.",
+      educationRelief: "교육 기회 구제 기준는 긍정적 여론을 얻었지만 기준 밖 신청을 늘렸다.",
+      protectiveHousing: "보호 거주 비공개 처리 기준는 보호 성과와 비공개 범위 논란을 함께 남겼다.",
+      safetyStandard: "안전 기준 완화 기록는 공동체 행사에는 도움이 되었지만 사고 책임 문제가 남았다.",
+      corporateException: "기업 특별 허가 기록는 감사국이 가장 민감하게 보는 항목이다.",
     },
     outcomes: mkOutcomes({
       profile: "verification",
       text: {
         approve:
-          "감사국에 기존 전례를 대부분 유지하겠다고 보고했다. 구제 성과는 강조되었지만, 일부 느슨한 전례는 계속 위험 요소로 남았다.",
+          "감사국에 기존 판단 기록를 대부분 유지하겠다고 보고했다. 구제 성과는 강조되었지만, 일부 느슨한 판단 기록는 계속 위험 요소로 남았다.",
         conditional:
-          "전례는 유지하되 적용 조건을 좁히고 사후 검증 기준을 보강하겠다고 보고했다. 예외 심사국의 제도화 가능성이 가장 높아졌다.",
+          "판단 기록는 유지하되 적용 조건을 좁히고 사후 검증 기준을 보강하겠다고 보고했다. 예외 심사국의 제도화 가능성이 가장 높아졌다.",
         reject:
-          "문제 소지가 큰 전례를 폐기하고 향후 적용을 제한하겠다고 보고했다. 행정 안정은 높아졌지만, 시민들은 예외 심사국이 후퇴했다고 느꼈다.",
+          "문제 소지가 큰 판단 기록를 폐기하고 향후 적용을 제한하겠다고 보고했다. 행정 안정은 높아졌지만, 시민들은 예외 심사국이 후퇴했다고 느꼈다.",
       },
     }),
   },
@@ -1200,4 +1200,4 @@ export const casePool: CaseData[] = [
 
 export const finalCaseId = "case-final";
 export const maxCasesPerRun = 15;
-export const maxVerificationCasesPerRun = 3;
+export const maxVerificationCasesPerRun = 2;
