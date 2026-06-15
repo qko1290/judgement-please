@@ -1140,3 +1140,185 @@ li {
     font-size: 0.9rem;
   }
 }
+
+/* Motion & Sound polish — 과한 연출 없이 클릭감과 화면 전환만 보강 */
+.game-header,
+.case-panel,
+.decision-panel,
+.start-card,
+.ending-card {
+  animation: soft-rise 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.case-enter {
+  animation: case-slide-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.decision-panel {
+  animation-delay: 0.04s;
+}
+
+.header-actions button,
+.primary-button,
+.choice-button,
+.change-next-button,
+.modal-close {
+  position: relative;
+  overflow: hidden;
+}
+
+.header-actions button::after,
+.primary-button::after,
+.choice-button::after,
+.change-next-button::after,
+.modal-close::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.09), transparent);
+  transform: translateX(-130%);
+  transition: transform 0.42s ease;
+}
+
+.header-actions button:hover::after,
+.primary-button:hover::after,
+.choice-button:hover::after,
+.change-next-button:hover::after,
+.modal-close:hover::after {
+  transform: translateX(130%);
+}
+
+.choice-button:hover {
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.choice-button:active,
+.primary-button:active,
+.change-next-button:active,
+.header-actions button:active {
+  transform: translateY(0) scale(0.992);
+}
+
+.sound-toggle[aria-pressed="true"] {
+  border-color: rgba(119, 228, 170, 0.36);
+  color: var(--good);
+  background: rgba(119, 228, 170, 0.055);
+}
+
+.sound-toggle[aria-pressed="false"] {
+  border-color: rgba(255, 116, 136, 0.26);
+  color: #dca0aa;
+  background: rgba(255, 116, 136, 0.045);
+}
+
+.modal-backdrop {
+  animation: backdrop-fade 0.18s ease-out both;
+}
+
+.modal-card {
+  animation: modal-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.change-card {
+  animation: popup-in 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.change-summary-box {
+  animation: soft-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.change-stat-row {
+  animation: stat-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.change-stat-row:nth-child(1) { animation-delay: 0.05s; }
+.change-stat-row:nth-child(2) { animation-delay: 0.09s; }
+.change-stat-row:nth-child(3) { animation-delay: 0.13s; }
+.change-stat-row:nth-child(4) { animation-delay: 0.17s; }
+
+.change-number {
+  transition: color 0.22s ease, text-shadow 0.22s ease;
+}
+
+.change-stat-row.safe .change-number {
+  text-shadow: 0 0 18px rgba(119, 228, 170, 0.14);
+}
+
+.change-stat-row.warning .change-number {
+  text-shadow: 0 0 18px rgba(255, 211, 111, 0.14);
+}
+
+.change-stat-row.danger .change-number {
+  text-shadow: 0 0 18px rgba(255, 116, 136, 0.14);
+}
+
+.meter > div,
+.change-meter-after {
+  transition: width 0.72s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.22s ease;
+}
+
+.nav-badge {
+  animation: badge-pop 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.result-panel:not(:has(.empty-text)) {
+  animation: result-flash 0.35s ease-out both;
+}
+
+.ending-card {
+  animation: ending-reveal 0.46s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes soft-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes case-slide-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes backdrop-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-rise {
+  from { opacity: 0; transform: translateY(12px) scale(0.986); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes stat-pop {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes badge-pop {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes result-flash {
+  from { border-color: rgba(215, 185, 110, 0.34); }
+  to { border-color: var(--line-soft); }
+}
+
+@keyframes ending-reveal {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

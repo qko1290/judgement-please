@@ -1,7 +1,7 @@
 // File: src/components/GameScreen.tsx
 "use client";
 
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   casePool,
@@ -56,6 +56,8 @@ type StatChangePopup = {
   after: Stats;
   delta: StatEffect;
 };
+
+type SoundKind = "start" | "choice" | "modal" | "success" | "warning" | "ending";
 
 const caseMap = new Map(casePool.map((item) => [item.id, item]));
 
@@ -580,6 +582,8 @@ export default function GameScreen() {
     null
   );
   const [statAnimationReady, setStatAnimationReady] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   const currentCaseNumber = history.length + 1;
 
@@ -602,6 +606,92 @@ export default function GameScreen() {
       }));
   }, [currentCase, precedents]);
 
+  function getAudioContext() {
+    if (typeof window === "undefined") return null;
+
+    const AudioContextConstructor =
+      window.AudioContext ||
+      (window as typeof window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+
+    if (!AudioContextConstructor) return null;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContextConstructor();
+    }
+
+    return audioContextRef.current;
+  }
+
+  function playSound(kind: SoundKind, force = false) {
+    if (!force && !soundEnabled) return;
+
+    const context = getAudioContext();
+    if (!context) return;
+
+    if (context.state === "suspended") {
+      void context.resume();
+    }
+
+    const now = context.currentTime;
+    const gain = context.createGain();
+    gain.connect(context.destination);
+
+    const playNote = (frequency: number, delay: number, duration: number, type: OscillatorType = "sine") => {
+      const oscillator = context.createOscillator();
+      const noteGain = context.createGain();
+
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, now + delay);
+      noteGain.gain.setValueAtTime(0.0001, now + delay);
+      noteGain.gain.exponentialRampToValueAtTime(0.045, now + delay + 0.012);
+      noteGain.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+
+      oscillator.connect(noteGain);
+      noteGain.connect(gain);
+      oscillator.start(now + delay);
+      oscillator.stop(now + delay + duration + 0.02);
+    };
+
+    gain.gain.setValueAtTime(0.9, now);
+
+    if (kind === "start") {
+      playNote(392, 0, 0.11);
+      playNote(587, 0.08, 0.16);
+    } else if (kind === "choice") {
+      playNote(520, 0, 0.07, "triangle");
+    } else if (kind === "modal") {
+      playNote(440, 0, 0.055);
+      playNote(660, 0.055, 0.075);
+    } else if (kind === "success") {
+      playNote(523, 0, 0.08);
+      playNote(659, 0.07, 0.1);
+      playNote(784, 0.14, 0.14);
+    } else if (kind === "warning") {
+      playNote(220, 0, 0.13, "sawtooth");
+      playNote(164, 0.09, 0.16, "sawtooth");
+    } else if (kind === "ending") {
+      playNote(330, 0, 0.12);
+      playNote(440, 0.1, 0.12);
+      playNote(660, 0.2, 0.22);
+    }
+  }
+
+  function openReviewModal(modalType: Exclude<ModalType, null>) {
+    playSound("modal");
+    setOpenModal(modalType);
+  }
+
+  function toggleSound() {
+    setSoundEnabled((enabled) => {
+      const next = !enabled;
+      if (!enabled) {
+        playSound("modal", true);
+      }
+      return next;
+    });
+  }
+
   useEffect(() => {
     if (!statChangePopup) return;
 
@@ -615,6 +705,8 @@ export default function GameScreen() {
   }, [statChangePopup?.id]);
 
   function startGame() {
+    playSound("start", true);
+
     const selection = selectInitialCase();
 
     setStarted(true);
@@ -634,6 +726,8 @@ export default function GameScreen() {
 
   function handleChoice(choice: ChoiceKey) {
     if (!currentCase || ending) return;
+
+    playSound("choice");
 
     const outcome = currentCase.outcomes[choice];
     const statsBefore = stats;
@@ -740,6 +834,14 @@ export default function GameScreen() {
       after: nextStats,
       delta,
     });
+
+    if (currentCase.id === finalCaseId || currentCaseNumber >= maxCasesPerRun) {
+      playSound("ending");
+    } else if (addedVerificationTitle || nextStats.rulePollution >= statsBefore.rulePollution + 8) {
+      playSound("warning");
+    } else if (unlockedPrecedent || resolvedVerificationTitle) {
+      playSound("success");
+    }
 
     if (currentCase.id === finalCaseId || currentCaseNumber >= maxCasesPerRun) {
       const finalEnding = decideEnding(
@@ -1064,17 +1166,17 @@ export default function GameScreen() {
 
           <SentenceText
             className="start-desc"
-            text="시민과 단체의 예외 신청을 심사하고, 당신의 판단이 판단 기준이 되어 다음 사건에 영향을 주는 웹 프로토타입입니다."
+            text="시민과 단체의 예외 신청을 심사하고, 당신의 선택이 판단 기준이 되어 다음 사건에 영향을 줍니다."
           />
 
           <div className="start-info-grid">
             <div>
-              <span>핵심 루프</span>
-              <strong>심사 → 예외 판단 → 기준화 → 정상 사용 / 악용 / 사후 검증</strong>
+              <span>루프</span>
+              <strong>심사 → 기준화 → 정상 사용 / 악용 / 사후 검증</strong>
             </div>
 
             <div>
-              <span>사례 구조</span>
+              <span>사례</span>
               <strong>전체 사례 풀 45개 중 한 판에 15개 랜덤 등장</strong>
             </div>
 
@@ -1160,29 +1262,39 @@ export default function GameScreen() {
         </div>
 
         <div className="header-actions">
-          <button type="button" onClick={() => setOpenModal("stats")}>
+          <button type="button" onClick={() => openReviewModal("stats")}>
             기관 상태
           </button>
 
-          <button type="button" onClick={() => setOpenModal("precedents")}>
+          <button type="button" onClick={() => openReviewModal("precedents")}>
             판단 근거
             {precedents.length > 0 && (
               <span className="nav-badge">{precedents.length}</span>
             )}
           </button>
 
-          <button type="button" onClick={() => setOpenModal("verifications")}>
+          <button type="button" onClick={() => openReviewModal("verifications")}>
             사후 검증
             {pendingVerifications.length > 0 && (
               <span className="nav-badge">{pendingVerifications.length}</span>
             )}
           </button>
 
-          <button type="button" onClick={() => setOpenModal("history")}>
+          <button type="button" onClick={() => openReviewModal("history")}>
             판단 기록
             {history.length > 0 && (
               <span className="nav-badge">{history.length}</span>
             )}
+          </button>
+
+          <button
+            className="sound-toggle"
+            type="button"
+            onClick={toggleSound}
+            aria-pressed={soundEnabled}
+            title={soundEnabled ? "효과음 끄기" : "효과음 켜기"}
+          >
+            {soundEnabled ? "효과음 ON" : "효과음 OFF"}
           </button>
 
           <span className="case-progress">CASE {progressText}</span>
@@ -1190,7 +1302,7 @@ export default function GameScreen() {
       </header>
 
       <div className="play-grid">
-        <section className="case-panel">
+        <section className="case-panel case-enter" key={currentCase.id}>
           <div className="case-panel-top">
             <span className="case-category">{currentCase.category}</span>
             <span className="case-id">#{currentCase.id}</span>
