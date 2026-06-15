@@ -207,7 +207,7 @@ function getResultSummaryParts(text: string) {
 
   const mainText = parts[0] ?? "";
   const extras = parts.slice(1).map((item) => {
-    if (item.startsWith("처리 기준 추가:")) return "기준 추가";
+    if (item.startsWith("처리 기준 추가:")) return "전례 생성";
     if (item.startsWith("사후 검증 등록:")) return "사후 검증 등록";
     if (item.startsWith("사후 검증 처리:")) return "사후 검증 처리";
     return "추가 조치";
@@ -868,11 +868,11 @@ export default function GameScreen() {
       <div className="modal-section">
         <SentenceText
           className="modal-desc"
-          text="예외 심사관의 판단이 누적된 기록입니다. 정식 승인은 이후 사건의 기준을 넓히고, 조건부 승인은 검증이 필요한 근거를 남깁니다."
+          text="예외 심사관의 판단으로 추가된 판단 기준입니다. 정식 승인은 강한 판단 기준을, 조건부 승인은 사후 검증이 필요한 판단 기준을 남깁니다."
         />
 
         {precedents.length === 0 ? (
-          <p className="empty-text">아직 누적된 판단 근거가 없습니다.</p>
+          <p className="empty-text">아직 추가된 판단 기준가 없습니다.</p>
         ) : (
           <div className="precedent-list">
             {precedents.map((key) => (
@@ -892,7 +892,7 @@ export default function GameScreen() {
       <div className="modal-section">
         <SentenceText
           className="modal-desc"
-          text="지금까지 내린 판단의 기록입니다. 판단의 누적 결과가 이후 사건과 엔딩을 결정합니다."
+          text="지금까지 내린 판단의 기록입니다. 판단의 누적 결과가 판단 기준과 엔딩을 결정합니다."
         />
 
         {history.length === 0 ? (
@@ -1064,13 +1064,13 @@ export default function GameScreen() {
 
           <SentenceText
             className="start-desc"
-            text="시민과 단체의 예외 신청을 심사하고, 당신의 판단이 이후 심사의 기준이 되어 다음 사건에 영향을 주는 웹 프로토타입입니다."
+            text="시민과 단체의 예외 신청을 심사하고, 당신의 판단이 판단 기준이 되어 다음 사건에 영향을 주는 웹 프로토타입입니다."
           />
 
           <div className="start-info-grid">
             <div>
               <span>핵심 루프</span>
-              <strong>심사 → 예외 판단 → 기준 누적 → 정상 사용 / 악용 / 사후 검증</strong>
+              <strong>심사 → 예외 판단 → 기준화 → 정상 사용 / 악용 / 사후 검증</strong>
             </div>
 
             <div>
@@ -1113,10 +1113,10 @@ export default function GameScreen() {
           </div>
 
           <div className="ending-summary">
-            <h3>누적된 판단 근거</h3>
+            <h3>추가된 판단 기준</h3>
 
             {precedents.length === 0 ? (
-              <p>누적된 판단 근거가 없습니다.</p>
+              <p>추가된 판단 기준가 없습니다.</p>
             ) : (
               <ul>
                 {precedents.map((key) => (
@@ -1206,7 +1206,7 @@ export default function GameScreen() {
 
           {activePrecedentContexts.length > 0 && (
             <div className="precedent-context-box">
-              <h3>이전 판단 영향</h3>
+              <h3>관련 판단 기준</h3>
 
               {activePrecedentContexts.map((item) => (
                 <div key={item.key}>
@@ -1231,7 +1231,7 @@ export default function GameScreen() {
 
           {currentCase.caseType === "final" && (
             <div className="special-notice notice-final">
-              <SentenceText text="최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라, 지금까지 쌓인 판단 기준을 유지·정비·폐기할지 결정합니다." />
+              <SentenceText text="최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라, 지금까지 만든 판단 기준를 유지·정비·폐기할지 결정합니다." />
             </div>
           )}
 
