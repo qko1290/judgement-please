@@ -207,7 +207,7 @@ function getResultSummaryParts(text: string) {
 
   const mainText = parts[0] ?? "";
   const extras = parts.slice(1).map((item) => {
-    if (item.startsWith("처리 기준 추가:")) return "전례 생성";
+    if (item.startsWith("처리 기준 추가:")) return "기준 추가";
     if (item.startsWith("사후 검증 등록:")) return "사후 검증 등록";
     if (item.startsWith("사후 검증 처리:")) return "사후 검증 처리";
     return "추가 조치";
@@ -872,7 +872,7 @@ export default function GameScreen() {
         />
 
         {precedents.length === 0 ? (
-          <p className="empty-text">아직 추가된 판단 기준가 없습니다.</p>
+          <p className="empty-text">아직 추가된 판단 기준이 없습니다.</p>
         ) : (
           <div className="precedent-list">
             {precedents.map((key) => (
@@ -1116,7 +1116,7 @@ export default function GameScreen() {
             <h3>추가된 판단 기준</h3>
 
             {precedents.length === 0 ? (
-              <p>추가된 판단 기준가 없습니다.</p>
+              <p>추가된 판단 기준이 없습니다.</p>
             ) : (
               <ul>
                 {precedents.map((key) => (
@@ -1231,7 +1231,7 @@ export default function GameScreen() {
 
           {currentCase.caseType === "final" && (
             <div className="special-notice notice-final">
-              <SentenceText text="최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라, 지금까지 만든 판단 기준를 유지·정비·폐기할지 결정합니다." />
+              <SentenceText text="최종 감사 단계입니다. 여기서는 개별 신청을 처리하는 것이 아니라, 지금까지 만든 판단 기준을 유지·정비·폐기할지 결정합니다." />
             </div>
           )}
 
